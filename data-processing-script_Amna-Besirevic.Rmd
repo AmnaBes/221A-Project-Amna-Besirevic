@@ -1,0 +1,117 @@
+---
+title: "Lab3 Assignment"
+author: Amna Besirevic
+output: html_document
+date: "2026-10-22"
+---
+H1: Gender will have an effect on the perception of constraints of leaving a relationship 
+
+->IV: Gender (categorical): SEX
+->DV:Perception of constraints of leaving relationship (conitnuous): relmob
+
+H2: Daily use of social media and daily time spent enhancing appearance will have a positive correlation
+
+V1: Daily use of socail media (continuous): Time_social_media_1
+V2: Daily time spent enhancing appearance (continuous): sum of eight Time_A_ items
+
+
+```{r setting up}
+library(codebook)
+
+#load the original dataset
+raw <- read.csv("data/raw/data_doctored.csv")
+
+#Check dimensions and variable names 
+dim(raw)
+names(raw)
+str(raw)
+```
+```{r}
+# H1: Gender and relationship constraints
+h1Data <- data.frame(
+  Sex = raw$Sex,
+  relmob = raw$relmob
+)
+
+# H2: Social media use and appearance time
+h2Data <- data.frame(
+  Time_social_media = raw$Time_social_media_1,
+  Time_A_makeup = raw$Time_A_makeup_1,
+  Time_A_hyg = raw$Time_A_hyg_1,
+  Time_A_cosm = raw$Time_A_cosm_1,
+  Time_A_exercise = raw$Time_A_exercise_1,
+  Time_A_hair = raw$Time_A_hair_1,
+  Time_A_dress = raw$Time_A_dress_1,
+  Time_A_diet = raw$Time_A_diet_1,
+  Time_A_other = raw$Time_A_other_1
+)
+
+# Calculate total appearance-enhancement time
+appearance_items <- c(
+  "Time_A_makeup", "Time_A_hyg", "Time_A_cosm",
+  "Time_A_exercise", "Time_A_hair", "Time_A_dress",
+  "Time_A_diet", "Time_A_other"
+)
+
+h2Data$Appearance_time <- rowSums(
+  h2Data[, appearance_items],
+  na.rm = FALSE
+)
+# Add descriptive labels
+var_label(h1Data$Sex) <- "Gender"
+var_label(h1Data$relmob) <- "Perceived constraints on leaving a relationship"
+
+var_label(h2Data$Time_social_media) <- "Daily time spent using social media"
+var_label(h2Data$Appearance_time) <- "Total daily time spent enhancing appearance"
+# Check the datasets
+head(h1Data)
+head(h2Data)
+```
+```{r}
+#check variables 
+table(raw$Sex, useNA = "ifany")
+summary(raw$relmob)
+summary(raw$Time_social_media_1)
+summary(h2Data$Appearance_time)
+```
+```{r}
+# Count answered appearance-time items per person
+h2Data$Appearance_items_answered <- rowSums(
+  !is.na(h2Data[, appearance_items])
+)
+
+table(h2Data$Appearance_items_answered)
+```
+```{r}
+sum(
+  !is.na(h2Data$Time_social_media) &
+  !is.na(h2Data$Appearance_time)
+)
+```
+```{r}
+# Keep complete cases for the H1 and H2 hypothesis datasets
+h1Data_complete <- h1Data[
+  complete.cases(h1Data), ]
+
+h2Data_complete <- h2Data[
+  complete.cases(h2Data[, c(
+    "Time_social_media", "Appearance_time"
+  )]), ]
+
+# Check the number of complete cases
+nrow(h1Data_complete)
+nrow(h2Data_complete)
+```
+```{r save the data}
+write.csv(h1Data, "data/h1_processed.csv", row.names = FALSE)
+write.csv(h2Data, "data/h2_processed.csv", row.names = FALSE)
+```
+
+```{r}
+#create codebook
+compact_codebook(h1Data)
+compact_codebook(h2Data)
+```
+
+
+
