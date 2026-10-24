@@ -1,0 +1,111 @@
+---
+title: "data-visualization-script_Amna_Besirevic"
+Author: "Amna Besirevic
+output: html_document
+date: "2026-10-23"
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r packages}
+library(ggplot2)
+library(reshape2)
+library(ggrain)
+
+install.packages("ggplot2")
+install.packages("reshape2")
+install.packages("ggrain")
+
+library(codebook)
+library(ggplot2)
+
+```
+
+
+### H1 Hypothesis Graph
+```{r H1 Graph - Violin}
+# Remove rows with missing gender or relationship constraint scores
+h1PlotData <- h1Data[
+  !is.na(h1Data$Sex) & !is.na(h1Data$relmob),
+]
+
+# Create the H1 violin plot
+h1Violin <- ggplot(
+  data = h1PlotData,
+  aes(x = Sex, y = relmob, fill = Sex)
+) +
+  geom_violin() +
+  geom_boxplot(width = 0.12) +
+  labs(
+    x = "Gender identity",
+    y = "Perceived constraints on leaving a relationship",
+    title = "Perceived constraints on leaving a relationship by gender"
+  ) +
+  theme_minimal(base_size = 8)
+
+h1Violin
+
+```
+```{r H1 Graph Box Plot}
+h1Box<-ggplot(
+  data = h1PlotData,
+  aes(x = Sex, y = relmob, fill = Sex)
+) +
+  geom_boxplot()+
+  labs(x="Gender Identity",
+       y="Perceived constraints on leaving a relationship",
+       title = "Perceived constraints on leaving a relationship by gender") +
+  theme_minimal(base_size = 8)
+
+h1Box
+```
+
+
+### H2 Hypothesis Graph
+
+```{r H2 Graph - Scatter plot}
+H2Point <- ggplot(data=h2Data_complete,
+                  aes(x=Time_social_media,
+                      y=Appearance_time))+
+  geom_point()+
+  labs(x="daily time spent on social media",
+       y="daily time spent enhancing appearance",
+       title="Relation between daily time spent on social media and daily time spent enhancing appearance")+
+  theme_minimal(base_size=8)
+
+H2Point
+
+nrow(h2Data)
+nrow(unique(h2Data[,c("Time_social_media","Appearance_time")]))
+
+#jitter 
+
+H2Jitter <- ggplot(data = h2Data_complete,
+                   aes(x = Time_social_media, 
+                       y = Appearance_time)) +
+  geom_jitter(alpha = 0.5, width = 0.2, height = 0.2) +
+  labs(
+    x = "Daily time spent on social media",
+    y = "Daily time spent enhancing appearance",
+    title = "Relation between daily time spent on social media and daily time spent enhancing appearance"
+  ) +
+  theme_minimal(base_size = 8)
+
+H2Jitter
+
+#add line (Smooth)
+
+h2line<- H2Jitter + geom_smooth(method = "lm")
+h2line
+```
+
+```{r Save figures}
+dir.create("figures",showWarnings=FALSE)
+ggsave("figures/H1_figrue_Violin.png", plot=h1Violin, width=10,height=6,dpi=300)
+ggsave("figures/H2_figure_Point.png", plot = h2line, width = 10, height = 6, dpi = 300)
+ggsave("figures/H1_figrue_BoxPlot.png", plot=h1Box, width=10,height=6,dpi=300)
+
+```
+
+
+
