@@ -19,6 +19,14 @@ V2: Daily time spent enhancing appearance (continuous): sum of eight Time_A_ ite
 library(codebook)
 
 #load the original dataset
+
+###JK: Please match the capitalization of your folder names in your paths. ###
+# Your repository contains a folder named Data, with a capital D.
+# Lowercase data may work on your computer but fail on a computer that distinguishes uppercase and lowercase paths.
+# Replace the read.csv() line below with:
+# raw <- read.csv("Data/raw/data_doctored.csv")
+###  End of comment ###
+
 raw <- read.csv("data/raw/data_doctored.csv")
 
 #Check dimensions and variable names 
@@ -27,6 +35,18 @@ names(raw)
 str(raw)
 ```
 ```{r}
+
+###JK: I recommend keeping ResponseId in both hypothesis datasets so you can trace each row back to the original response. ###
+# Your current calculations do not require the ID, but keeping it makes it easier to investigate unusual values and check for duplicates.
+# Add the following line as the first entry inside each of the two data.frame() calls below, keeping the comma:
+#   ResponseId = raw$ResponseId,
+# After creating the datasets, you can check the IDs with:
+# sum(is.na(h1Data$ResponseId))
+# sum(duplicated(h1Data$ResponseId))
+# sum(is.na(h2Data$ResponseId))
+# sum(duplicated(h2Data$ResponseId))
+###  End of comment ###
+
 # H1: Gender and relationship constraints
 h1Data <- data.frame(
   Sex = raw$Sex,
@@ -57,6 +77,26 @@ h2Data$Appearance_time <- rowSums(
   h2Data[, appearance_items],
   na.rm = FALSE
 )
+
+###JK: Convert Sex to a factor because your H1 treats gender as categories, not a numerical score. ###
+# The values 0, 1, 2, and 3 identify different response categories; they do not represent increasing amounts of gender.
+# var_label() adds a description but does not change the variable's type.
+# Add this code here, before assigning labels and creating h1Data_complete:
+# h1Data$Sex <- factor(
+#   h1Data$Sex,
+#   levels = c(0, 1, 2, 3),
+#   labels = c("Men", "Women", "Non-binary", "Prefer not to say")
+# )
+# table(h1Data$Sex, useNA = "ifany")
+# str(h1Data$Sex)
+###  End of comment ###
+
+###JK: Please use Section 8, "Add labels and generate codebooks," in my Lab03 example script as a guide for expanding these descriptions. ###
+# Your labels name the variables, but readers also need to know the category codes, response ranges, units, and what higher values mean.
+# For Appearance_time, also explain which items are added and that all eight responses are required to calculate the total.
+# Follow the var_label() examples in that section, using the information for your own variables from the codebook.
+###  End of comment ###
+
 # Add descriptive labels
 var_label(h1Data$Sex) <- "Gender"
 var_label(h1Data$relmob) <- "Perceived constraints on leaving a relationship"
@@ -98,17 +138,53 @@ h2Data_complete <- h2Data[
     "Time_social_media", "Appearance_time"
   )]), ]
 
+###JK: Please inspect unusually large totals. ###
+# In the current data, 552 participants' appearance-time totals exceed 1,440 minutes (24 hours).
+# The maximum total is 2,880 minutes, so these totals need attention before interpreting them as actual time spent in a day.
+# Inspect them and explain how you will interpret or handle them.
+# You can check them with:
+# summary(h2Data_complete$Appearance_time)
+# sum(h2Data_complete$Appearance_time > 1440)
+# head(h2Data_complete[h2Data_complete$Appearance_time > 1440,
+#                      c(appearance_items, "Appearance_time")])
+# Please include the minutes unit and the all-eight-items requirement in the description of Appearance_time.
+###  End of comment ###
+
 # Check the number of complete cases
 nrow(h1Data_complete)
 nrow(h2Data_complete)
 ```
 ```{r save the data}
+
+###JK: Save the complete-case datasets you just created, rather than the original unfiltered datasets. ###
+# h1Data_complete and h2Data_complete contain 86,464 and 7,745 rows, respectively, with your current inclusion rules.
+# The lines below save h1Data and h2Data instead, so the submitted CSV files each still contain all 117,294 rows, including missing values.
+# Replace both write.csv() lines below with:
+# write.csv(h1Data_complete, "Data/h1_processed.csv", row.names = FALSE)
+# write.csv(h2Data_complete, "Data/h2_processed.csv", row.names = FALSE)
+# Then read the files back to check that the intended datasets were saved:
+# h1Saved <- read.csv("Data/h1_processed.csv")
+# h2Saved <- read.csv("Data/h2_processed.csv")
+# nrow(h1Saved)
+# nrow(h2Saved)
+# colSums(is.na(h1Saved))
+# colSums(is.na(h2Saved))
+###  End of comment ###
+
 write.csv(h1Data, "data/h1_processed.csv", row.names = FALSE)
 write.csv(h2Data, "data/h2_processed.csv", row.names = FALSE)
 ```
 
 ```{r}
 #create codebook
+
+###JK: Generate the codebooks from the same final datasets you save. ###
+# Otherwise, the codebook summaries describe the unfiltered data rather than the participants retained for your hypotheses.
+# Replace the two calls below with:
+# compact_codebook(h1Data_complete)
+# compact_codebook(h2Data_complete)
+###  End of comment ###
+
 compact_codebook(h1Data)
 compact_codebook(h2Data)
 ```
