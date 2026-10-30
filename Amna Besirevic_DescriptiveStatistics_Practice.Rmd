@@ -1,0 +1,185 @@
+---
+title: "PSY221A: Descriptive Statistics"
+output: html_document
+Author: Amna Besirevic
+---
+
+## 1. Load the processed data
+
+```{r load}
+# Open the project's .Rproj file before running chunks.
+# Install psych once in the Console if needed: install.packages("psych")
+
+library(psych)
+
+# Load the processed datasets
+h1Data <- read.csv("Data/h1_processed.csv")
+h2Data <- read.csv("Data/h2_processed.csv")
+
+# Check the datasets
+dim(h1Data)
+dim(h2Data)
+
+names(h1Data)
+names(h2Data)
+
+```
+
+## 2. Look at the distribution first
+
+```{r histogram}
+# A histogram groups numerical values into intervals (bins).
+# Bar height shows how many observations fall in each interval.
+# Start by looking at the distribution before calculating summary statistics.
+
+# Add readable labels to the same histogram.
+
+# H1: Distribution of perceived constraints on leaving a relationship
+hist(
+  h1Data$relmob,
+  main = "Distribution of perceived relationship mobility constraints",
+  xlab = "Perceived constraints on leaving a relationship",
+  col = "lightblue"
+)
+
+# H2: Distribution of daily social media use
+hist(
+  h2Data$Time_social_media,
+  main = "Distribution of daily social media use",
+  xlab = "Daily social media use",
+  col = "lightblue"
+)
+
+# H2: Distribution of daily appearance-enhancement time
+hist(
+  h2Data$Appearance_time,
+  main = "Distribution of daily time spent enhancing appearance",
+  xlab = "Appearance-enhancement time",
+  col = "lightblue"
+)
+```
+
+## 3. One statistic at a time
+
+```{r individual_statistics}
+# Mean: add the scores and divide by the number of observed responses.
+mean(h1Data$relmob, na.rm = TRUE)
+mean(h2Data$Time_social_media, na.rm = TRUE)
+mean(h2Data$Appearance_time, na.rm = TRUE)
+
+# Median: the middle score after sorting the responses.
+median(h1Data$relmob, na.rm = TRUE)
+median(h2Data$Time_social_media, na.rm = TRUE)
+median(h2Data$Appearance_time, na.rm = TRUE)
+
+# Table: count how many people are in each category.
+table(h1Data$Sex, useNA = "ifany")
+
+# Range: return the minimum and maximum, rather than their difference.
+range(h1Data$relmob, na.rm = TRUE)
+range(h2Data$Time_social_media, na.rm = TRUE)
+range(h2Data$Appearance_time, na.rm = TRUE)
+
+# IQR: the 75th percentile minus the 25th percentile.
+IQR(h1Data$relmob, na.rm = TRUE)
+IQR(h2Data$Time_social_media, na.rm = TRUE)
+IQR(h2Data$Appearance_time, na.rm = TRUE)
+```
+
+## 4. Standardize a variable
+
+```{r standardize}
+# scale() uses z = (original score - mean) / standard deviation by default.
+# Keep the original commitment scores and store the standardized values separately.
+# scale() returns a matrix; as.numeric() makes a simple numeric column.
+
+# Standardize daily social media use
+h2Data$Social_media_z <- as.numeric(
+  scale(h2Data$Time_social_media)
+)
+
+# Standardize daily appearance-enhancement time
+h2Data$Appearance_time_z <- as.numeric(
+  scale(h2Data$Appearance_time)
+)
+
+# Check standardized means and standard deviations
+mean(h2Data$Social_media_z, na.rm = TRUE)
+sd(h2Data$Social_media_z, na.rm = TRUE)
+
+mean(h2Data$Appearance_time_z, na.rm = TRUE)
+sd(h2Data$Appearance_time_z, na.rm = TRUE)
+
+# Standardized scores have mean approximately 0 and standard deviation 1.
+```
+
+## 5. Covariance and correlation
+
+```{r association}
+# Covariance describes whether two variables tend to move together.
+# Positive: higher values tend to occur together. Negative: higher values tend to accompany lower values.
+# Its size depends on the units and is not restricted to -1 through 1.
+
+# Covariance between social media use and appearance-enhancement time
+cov(
+  h2Data$Time_social_media,
+  h2Data$Appearance_time,
+  use = "complete.obs")
+
+
+# Pearson correlation expresses a linear association on a -1 to 1 scale.
+
+# Pearson correlation between the two variables
+cor(
+  h2Data$Time_social_media,
+  h2Data$Appearance_time,
+  use = "complete.obs"
+)
+
+
+# Select numerical variables only; do not include participant IDs or category codes.
+
+h2CorData <- h2Data[, c(
+  "Time_social_media",
+  "Appearance_time"
+)]
+
+
+# A correlation matrix gives the correlation for each pair of columns.
+
+cor(h2CorData, use = "complete.obs")
+
+# The diagonal is 1 because each variable is correlated with itself.
+```
+
+## 6. Several statistics at once
+
+```{r combined_summaries}
+# summary() reports minimum, quartiles, median, mean, maximum, and missing counts when present.
+
+# H1: Summary of perceived constraints on leaving a relationship
+summary(h1Data$relmob)
+
+# H2: Summary of social media use and appearance-enhancement time
+summary(h2CorData)
+
+
+# psych::describe() reports n, mean, SD, median, minimum, maximum, range width (max minus min), skewness, kurtosis, and other summaries.
+# However it does not report every statistic above: compute IQR, cov(), and cor() separately.
+
+# H1: Descriptive statistics by gender
+psych::describeBy(
+  h1Data$relmob,
+  group = h1Data$Sex
+)
+
+# H2: Descriptive statistics for both H2 variables
+psych::describe(h2CorData)
+
+```
+
+```{r codebooks}
+compact_codebook(h1Data_complete)
+compact_codebook(h2Data_complete)
+```
+
