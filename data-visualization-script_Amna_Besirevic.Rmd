@@ -8,104 +8,226 @@ editor_options:
 ---
 
 ```{r packages}
+# Load required packages
 library(ggplot2)
 library(reshape2)
 library(ggrain)
-
-install.packages("ggplot2")
-install.packages("reshape2")
-install.packages("ggrain")
-
 library(codebook)
-library(ggplot2)
-
 ```
 
 
 ### H1 Hypothesis Graph
-```{r H1 Graph - Violin}
-# Remove rows with missing gender or relationship constraint scores
-h1PlotData <- h1Data[
-  !is.na(h1Data$Sex) & !is.na(h1Data$relmob),
-]
+```{r H1 Graph - prepare data}
+#H1 hypothesis graphs
 
-# Create the H1 violin plot
+#Hypothesis 1:Gender will have an effect on the perception of constraints of leaving a relationship.
+
+#IV: Gender (`Sex`) – categorical.
+#DV: Perceived constraints on leaving a relationship (`relmob`) – continuous.
+
+#use the complete-case dataset created in your previous section.
+
+# Use complete-case H1 dataset
+h1PlotData <- h1Data_complete
+
+# Check the number of participants
+nrow(h1PlotData)
+
+# Check the number of participants in each gender category
+table(h1PlotData$Sex)
+```
+
+
+```{r H1 violinplot}
+# Create H1 violin plot
 h1Violin <- ggplot(
   data = h1PlotData,
-  aes(x = Sex, y = relmob, fill = Sex)
+  aes(
+    x = Sex,
+    y = relmob,
+    fill = Sex
+  )
 ) +
-  geom_violin() +
-  geom_boxplot(width = 0.12) +
+  geom_violin(
+    trim = FALSE,
+    alpha = 0.6
+  ) +
+  geom_boxplot(
+    width = 0.12,
+    outlier.shape = NA
+  ) +
   labs(
     x = "Gender identity",
     y = "Perceived constraints on leaving a relationship",
-    title = "Perceived constraints on leaving a relationship by gender"
+    title = "Perceived constraints on leaving a relationship by gender",
+    fill = "Gender"
   ) +
-  theme_minimal(base_size = 8)
+  theme_minimal(base_size = 10)
 
+# Display graph
 h1Violin
-
 ```
-```{r H1 Graph Box Plot}
-h1Box<-ggplot(
-  data = h1PlotData,
-  aes(x = Sex, y = relmob, fill = Sex)
-) +
-  geom_boxplot()+
-  labs(x="Gender Identity",
-       y="Perceived constraints on leaving a relationship",
-       title = "Perceived constraints on leaving a relationship by gender") +
-  theme_minimal(base_size = 8)
 
+```{r H1 Boxplot}
+# Create H1 boxplot
+h1Box <- ggplot(
+  data = h1PlotData,
+  aes(
+    x = Sex,
+    y = relmob,
+    fill = Sex
+  )
+) +
+  geom_boxplot(
+    alpha = 0.7
+  ) +
+  labs(
+    x = "Gender identity",
+    y = "Perceived constraints on leaving a relationship",
+    title = "Perceived constraints on leaving a relationship by gender",
+    fill = "Gender"
+  ) +
+  theme_minimal(base_size = 10)
+
+# Display graph
 h1Box
 ```
 
-
 ### H2 Hypothesis Graph
 
+```{r H2 prepare data}
+#Hypothesis 2: Daily use of social media and daily time spent enhancing appearance will have a positive correlation.
+
+#Variable 1: Daily social media use (`Time_social_media`) – continuous.
+# Variable 2: Daily appearance-enhancement time (`Appearance_time`) – continuous.
+
+#use `h2Data_complete`, which includes only participants with complete social media and all eight appearance-time responses.
+
+# Use complete-case H2 dataset
+h2PlotData <- h2Data_complete
+
+# Check the number of participants
+nrow(h2PlotData)
+
+# Check the number of unique combinations of the two variables
+nrow(unique(
+  h2PlotData[, c(
+    "Time_social_media",
+    "Appearance_time"
+  )]
+))
+```
+
+
 ```{r H2 Graph - Scatter plot}
-H2Point <- ggplot(data=h2Data_complete,
-                  aes(x=Time_social_media,
-                      y=Appearance_time))+
-  geom_point()+
-  labs(x="daily time spent on social media",
-       y="daily time spent enhancing appearance",
-       title="Relation between daily time spent on social media and daily time spent enhancing appearance")+
-  theme_minimal(base_size=8)
 
-H2Point
-
-nrow(h2Data)
-nrow(unique(h2Data[,c("Time_social_media","Appearance_time")]))
-
-#jitter 
-
-H2Jitter <- ggplot(data = h2Data_complete,
-                   aes(x = Time_social_media, 
-                       y = Appearance_time)) +
-  geom_jitter(alpha = 0.5, width = 0.2, height = 0.2) +
-  labs(
-    x = "Daily time spent on social media",
-    y = "Daily time spent enhancing appearance",
-    title = "Relation between daily time spent on social media and daily time spent enhancing appearance"
+# Create H2 scatterplot
+H2Point <- ggplot(
+  data = h2PlotData,
+  aes(
+    x = Time_social_media,
+    y = Appearance_time
+  )
+) +
+  geom_point(
+    alpha = 0.3
   ) +
-  theme_minimal(base_size = 8)
+  labs(
+    x = "Daily time spent using social media (minutes)",
+    y = "Daily time spent enhancing appearance (minutes)",
+    title = "Relationship between daily social media use and appearance-enhancement time"
+  ) +
+  theme_minimal(base_size = 10)
 
+# Display graph
+H2Point
+```
+
+
+```{r H2- Jitter}
+# Create H2 jitter plot
+H2Jitter <- ggplot(
+  data = h2PlotData,
+  aes(
+    x = Time_social_media,
+    y = Appearance_time
+  )
+) +
+  geom_jitter(
+    alpha = 0.3,
+    width = 0.2,
+    height = 0.2
+  ) +
+  labs(
+    x = "Daily time spent using social media (minutes)",
+    y = "Daily time spent enhancing appearance (minutes)",
+    title = "Relationship between daily social media use and appearance-enhancement time"
+  ) +
+  theme_minimal(base_size = 10)
+
+# Display graph
 H2Jitter
+```
 
-#add line (Smooth)
+```{r add regression line}
+# Add linear regression line to the jitter plot
+h2line <- H2Jitter +
+  geom_smooth(
+    method = "lm",
+    se = TRUE,
+    color = "blue"
+  )
 
-h2line<- H2Jitter + geom_smooth(method = "lm")
+# Display graph
 h2line
 ```
 
+
 ```{r Save figures}
-dir.create("figures",showWarnings=FALSE)
-ggsave("figures/H1_figrue_Violin.png", plot=h1Violin, width=10,height=6,dpi=300)
-ggsave("figures/H2_figure_Point.png", plot = h2line, width = 10, height = 6, dpi = 300)
-ggsave("figures/H1_figrue_BoxPlot.png", plot=h1Box, width=10,height=6,dpi=300)
+# Create figures folder if it does not exist
+dir.create("figures", showWarnings = FALSE)
 
-```
+# Save final H1 violin plot
+ggsave(
+  "figures/H1_figure_Violin_Final.png",
+  plot = h1Violin,
+  width = 10,
+  height = 6,
+  dpi = 300
+)
 
+# Save final H1 boxplot
+ggsave(
+  "figures/H1_figure_BoxPlot_Final.png",
+  plot = h1Box,
+  width = 10,
+  height = 6,
+  dpi = 300
+)
 
+# Save final H2 scatterplot
+ggsave(
+  "figures/H2_figure_Scatterplot_Final.png",
+  plot = H2Point,
+  width = 10,
+  height = 6,
+  dpi = 300
+)
 
+# Save final H2 jitter plot
+ggsave(
+  "figures/H2_figure_Jitter_Final.png",
+  plot = H2Jitter,
+  width = 10,
+  height = 6,
+  dpi = 300
+)
+
+# Save final H2 regression plot
+ggsave(
+  "figures/H2_figure_Regression_Final.png",
+  plot = h2line,
+  width = 10,
+  height = 6,
+  dpi = 300
+)

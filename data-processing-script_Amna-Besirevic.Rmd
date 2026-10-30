@@ -3,6 +3,8 @@ title: "Lab3 Assignment"
 author: Amna Besirevic
 output: html_document
 date: "2026-10-22"
+editor_options: 
+  chunk_output_type: console
 ---
 H1: Gender will have an effect on the perception of constraints of leaving a relationship 
 
@@ -19,6 +21,7 @@ V2: Daily time spent enhancing appearance (continuous): sum of eight Time_A_ ite
 library(codebook)
 
 #load the original dataset
+<<<<<<< HEAD
 
 ###JK: Please match the capitalization of your folder names in your paths. ###
 # Your repository contains a folder named Data, with a capital D.
@@ -28,12 +31,17 @@ library(codebook)
 ###  End of comment ###
 
 raw <- read.csv("data/raw/data_doctored.csv")
+=======
+raw <- read.csv("Data/raw/data_doctored.csv")
+>>>>>>> 0f86484 (Corrected version based on JK feedback)
 
 #Check dimensions and variable names 
 dim(raw)
 names(raw)
 str(raw)
 ```
+
+
 ```{r}
 
 ###JK: I recommend keeping ResponseId in both hypothesis datasets so you can trace each row back to the original response. ###
@@ -49,12 +57,26 @@ str(raw)
 
 # H1: Gender and relationship constraints
 h1Data <- data.frame(
+  ResponseId = raw$ResponseId,
   Sex = raw$Sex,
   relmob = raw$relmob
 )
 
+# Convert Sex into a categorical variable with labels
+h1Data$Sex <- factor(
+  h1Data$Sex,
+  levels = c(0, 1, 2, 3),
+  labels = c(
+    "Men",
+    "Women",
+    "Non-binary",
+    "Prefer not to say"
+  )
+)
+
 # H2: Social media use and appearance time
 h2Data <- data.frame(
+  ResponseId = raw$ResponseId,
   Time_social_media = raw$Time_social_media_1,
   Time_A_makeup = raw$Time_A_makeup_1,
   Time_A_hyg = raw$Time_A_hyg_1,
@@ -73,10 +95,12 @@ appearance_items <- c(
   "Time_A_diet", "Time_A_other"
 )
 
+# Calculate the total only when all eight items have been answered
 h2Data$Appearance_time <- rowSums(
   h2Data[, appearance_items],
   na.rm = FALSE
 )
+<<<<<<< HEAD
 
 ###JK: Convert Sex to a factor because your H1 treats gender as categories, not a numerical score. ###
 # The values 0, 1, 2, and 3 identify different response categories; they do not represent increasing amounts of gender.
@@ -100,20 +124,76 @@ h2Data$Appearance_time <- rowSums(
 # Add descriptive labels
 var_label(h1Data$Sex) <- "Gender"
 var_label(h1Data$relmob) <- "Perceived constraints on leaving a relationship"
+=======
+>>>>>>> 0f86484 (Corrected version based on JK feedback)
 
-var_label(h2Data$Time_social_media) <- "Daily time spent using social media"
-var_label(h2Data$Appearance_time) <- "Total daily time spent enhancing appearance"
+# Count answered appearance-time items per participant
+h2Data$Appearance_items_answered <- rowSums(
+  !is.na(h2Data[, appearance_items])
+)
+
+# Check gender categories
+table(h1Data$Sex, useNA = "ifany")
+
+# Check variable structure
+str(h1Data$Sex)
+
 # Check the datasets
 head(h1Data)
 head(h2Data)
 ```
+
+
+```{r add descriptive labels}
+# Add descriptive labels
+
+# H1
+var_label(h1Data$ResponseId) <- "Unique participant response identifier"
+
+var_label(h1Data$Sex) <- paste(
+  "Gender (0 = Men, 1 = Women,",
+  "2 = Non-binary, 3 = Prefer not to say)."
+)
+
+var_label(h1Data$relmob) <- paste(
+  "Perceived constraints on leaving a relationship.",
+  "Continuous measure; higher scores indicate greater perceived constraints."
+)
+
+# H2
+var_label(h2Data$ResponseId) <- "Unique participant response identifier"
+
+var_label(h2Data$Time_social_media) <- paste(
+  "Daily time spent using social media, measured in minutes."
+)
+
+var_label(h2Data$Appearance_time) <- paste(
+  "Total daily time spent enhancing appearance, measured in minutes.",
+  "Calculated as the sum of eight items:",
+  "makeup, hygiene, cosmetics, exercise, hair, dress, diet and other.",
+  "All eight items must be answered to calculate the total.",
+  "Higher values indicate more time spent enhancing appearance."
+)
+
+# Check the datasets
+head(h1Data)
+head(h2Data)
+```
+
 ```{r}
-#check variables 
+# Check gender distribution
 table(raw$Sex, useNA = "ifany")
-summary(raw$relmob)
-summary(raw$Time_social_media_1)
+
+# Check relationship mobility scores
+summary(h1Data$relmob)
+
+# Check daily social media time
+summary(h2Data$Time_social_media)
+
+# Check total appearance-enhancement time
 summary(h2Data$Appearance_time)
 ```
+
 ```{r}
 # Count answered appearance-time items per person
 h2Data$Appearance_items_answered <- rowSums(
@@ -122,21 +202,64 @@ h2Data$Appearance_items_answered <- rowSums(
 
 table(h2Data$Appearance_items_answered)
 ```
+
+```{r checking missing appearance times}
+# Count answered appearance-time items per participant
+h2Data$Appearance_items_answered <- rowSums(
+  !is.na(h2Data[, appearance_items])
+)
+
+# Display the number of participants by number of answered items
+table(h2Data$Appearance_items_answered)
+
+# Count participants with complete social media and appearance-time data
+sum(
+  !is.na(h2Data$Time_social_media) &
+  !is.na(h2Data$Appearance_time)
+)
+```
+
+```{r check unusual values}
+# Summary statistics for appearance-enhancement time
+summary(h2Data$Appearance_time)
+
+# Count participants with totals exceeding 1440 minutes
+sum(h2Data$Appearance_time > 1440, na.rm = TRUE)
+
+# Inspect participants with totals exceeding 1440 minutes
+unusual_values <- h2Data[
+  !is.na(h2Data$Appearance_time) &
+    h2Data$Appearance_time > 1440,
+  c(appearance_items, "Appearance_time", "ResponseId")
+]
+
+# Display unusual observations
+head(unusual_values)
+
+# Inspect the distribution of unusually large values
+summary(unusual_values$Appearance_time)
+```
+
 ```{r}
 sum(
   !is.na(h2Data$Time_social_media) &
   !is.na(h2Data$Appearance_time)
 )
 ```
-```{r}
-# Keep complete cases for the H1 and H2 hypothesis datasets
-h1Data_complete <- h1Data[
-  complete.cases(h1Data), ]
 
+```{r keep complete cases}
+# H1: Retain participants with complete gender and relationship constraint data
+h1Data_complete <- h1Data[
+  complete.cases(h1Data[, c("Sex", "relmob")]),
+]
+
+# H2: Retain participants with complete social media and appearance-time data
 h2Data_complete <- h2Data[
   complete.cases(h2Data[, c(
-    "Time_social_media", "Appearance_time"
-  )]), ]
+    "Time_social_media",
+    "Appearance_time"
+  )]),
+]
 
 ###JK: Please inspect unusually large totals. ###
 # In the current data, 552 participants' appearance-time totals exceed 1,440 minutes (24 hours).
@@ -153,8 +276,14 @@ h2Data_complete <- h2Data[
 # Check the number of complete cases
 nrow(h1Data_complete)
 nrow(h2Data_complete)
+
+# Check missing values in complete-case datasets
+colSums(is.na(h1Data_complete))
+colSums(is.na(h2Data_complete))
 ```
+
 ```{r save the data}
+<<<<<<< HEAD
 
 ###JK: Save the complete-case datasets you just created, rather than the original unfiltered datasets. ###
 # h1Data_complete and h2Data_complete contain 86,464 and 7,745 rows, respectively, with your current inclusion rules.
@@ -187,7 +316,38 @@ write.csv(h2Data, "data/h2_processed.csv", row.names = FALSE)
 
 compact_codebook(h1Data)
 compact_codebook(h2Data)
+=======
+# Save complete-case datasets
+write.csv(
+  h1Data_complete,
+  "Data/h1_processed.csv",
+  row.names = FALSE
+)
+
+write.csv(
+  h2Data_complete,
+  "Data/h2_processed.csv",
+  row.names = FALSE
+)
+
+# Read the saved files back into R
+h1Saved <- read.csv("Data/h1_processed.csv")
+h2Saved <- read.csv("Data/h2_processed.csv")
+
+# Check dimensions
+nrow(h1Saved)
+nrow(h2Saved)
+
+# Check missing values
+colSums(is.na(h1Saved))
+colSums(is.na(h2Saved))
 ```
 
+```{r codebook}
+# Generate codebooks for the final datasets
+compact_codebook(h1Data_complete)
 
+compact_codebook(h2Data_complete)
+>>>>>>> 0f86484 (Corrected version based on JK feedback)
+```
 
