@@ -1,0 +1,187 @@
+---
+title: "Quarto Document"
+author: "Amna Besirevic"
+format: html
+editor: visual
+  toc: true
+  code-fold: true 
+execute: 
+  echo: true
+editor_options: 
+  chunk_output_type: console
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+1 + 1
+```
+
+You can add options to executable code like this
+
+```{r}
+#| echo: false
+2 * 2
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).
+
+```{r}
+#| label:load-data
+#| include: false #won't show in output
+library(ggplot2)
+library(ggrain)
+
+h1Data<-read.csv("Data/h1_processed.csv")
+h1Data$Sex <- factor(
+  h1Data$Sex,
+  levels = c(0, 1, 2, 3),
+  labels = c(
+    "Men",
+    "Women",
+    "Non-binary",
+    "Prefer not to say"
+  )
+)
+
+h2Datat<-read.csv("Data/h2_processed.csv")
+
+```
+
+## Hypothesis 1
+
+H1: Gender will have an effect on the perception of constraints of leaving a relationship
+
+### Variables and descriptive statistics
+
+- **Sex at birth ('Sex_birth')**: a categorical variable with four groups; Male, Female, and Non-binary, and Prefer not to say.
+
+- **Relationships mobility ('relmob')**: a continuous variable about perceived constraints of leaving a relationship on a 7-point scale (higher scores indicate greater perceived constraints).
+
+```{r}
+#| label: h1-descriptives
+
+# Count respondents in each group.
+table(h1Data$Sex)
+
+# Summarize relmob points separately for each group.
+by(h1Data$relmob, h1Data$Sex, summary)
+
+```
+
+### H1 Graph 
+
+@fig-relmob shows the distribution of points by sex at birth. The half-violin shows the shape of the distribution, the box summarizes the median and quartiles, and the dots represent individual responses.
+
+```{r}
+#| label: fig-h1-raincloud
+#| fig-cap: "Perceived constraints on leaving a relationship by gender identity."
+#| fig-width: 8
+#| fig-height: 5
+
+ggplot(
+  h1PlotData,
+  aes(
+    x = Sex,
+    y = relmob,
+    fill = Sex
+  )
+) +
+  geom_rain(
+    alpha = 0.5,
+    point.args = list(alpha = 0.04, size = 0.6)
+  ) +
+  labs(
+    x = "Gender identity",
+    y = "Perceived constraints on leaving a relationship"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+## Hypothesis 2
+
+H2: Daily use of social media and daily time spent enhancing appearance will have a positive correlation
+
+### Variables and descriptive statistics
+
+- **Daily social media use ('Time_social_media')**: Measures the amount of time respondents spend using social media each day, recorded in minutes. Higher values indicated greater daily social media use.
+
+- **Daily appearance-enhancement time ('Appearance_time')**: Measures the total amount of time respondents spend on appearance-enhancing activities each day, recorded in minutes. This variable is calculated adding together eight items: makeup, hygiene, cosmetics, exercise, hair, dress, diet, and other appearance-related activities. All eight items must be answered for a total score to be calculated. Higher values indicate more time spent enhancing appearance
+
+```{r}
+# H2: Descriptive statistics
+
+# Summary of daily social media use
+summary(h2Data_complete$Time_social_media)
+
+# Summary of daily appearance-enhancement time
+summary(h2Data_complete$Appearance_time)
+
+# Standard deviations
+sd(h2Data_complete$Time_social_media, na.rm = TRUE)
+sd(h2Data_complete$Appearance_time, na.rm = TRUE)
+
+# Number of participants
+nrow(h2Data_complete)
+```
+
+### H2 Graph
+
+@fig-h2-scatterplot The scatterplot shows the relationship between daily social media use and daily time spent enhancing appearance. Each dot represents an individual respondent. The fitted regression line illustrates the direction of the relationship, while the shaded area represents the 95% confidence interval.
+
+```{r}
+#| label: fig-h2-scatterplot
+#| fig-cap: "Association between daily social media use and daily time spent enhancing appearance."
+#| fig-width: 8
+#| fig-height: 5
+
+ggplot(
+  data = h2Data_complete,
+  aes(
+    x = Time_social_media,
+    y = Appearance_time
+  )
+) +
+  geom_point(
+    alpha = 0.3,
+    size = 1.5
+  ) +
+  geom_smooth(
+    method = "lm",
+    se = TRUE
+  ) +
+  labs(
+    x = "Daily time spent using social media (minutes)",
+    y = "Daily time spent enhancing appearance (minutes)",
+    title = "Social media use and appearance-enhancement time"
+  ) +
+  theme_minimal(base_size = 10)
+```
+
+### Observed trend
+
+```{r}
+#| label: correlation
+
+r <- cor(
+  h2Data_complete$Time_social_media,
+  h2Data_complete$Appearance_time,
+  use = "complete.obs"
+)
+
+round(r, 2)
+```
+
+```{r}
+### Written interpretation
+
+ # The correlation was `r = 0.39`, indicating a positive association association. Respondents who reported spending more time using social media tended to spend more time enhancing their appearance.
+
+```
