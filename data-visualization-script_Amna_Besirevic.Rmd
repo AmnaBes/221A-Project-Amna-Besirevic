@@ -1,11 +1,12 @@
 ---
 title: "data-visualization-script_Amna_Besirevic"
-Author: "Amna Besirevic
+Author: "Amna Besirevic"
 output: html_document
 date: "2026-10-23"
 editor_options: 
   chunk_output_type: console
 ---
+
 
 ```{r packages}
 # Load required packages
@@ -28,6 +29,14 @@ library(codebook)
 #use the complete-case dataset created in your previous section.
 
 # Use complete-case H1 dataset
+
+###JK: Load the final CSVs in this script. ###
+# h1Data_complete and h2Data_complete are created in your processing script, so opening this file in a fresh R session leaves them undefined.
+# Replace both plot-data assignments with reads from those files:
+# h1PlotData <- read.csv("Data/h1_processed.csv")
+# h2PlotData <- read.csv("Data/h2_processed.csv")
+###  End of comment ###
+
 h1PlotData <- h1Data_complete
 
 # Check the number of participants
