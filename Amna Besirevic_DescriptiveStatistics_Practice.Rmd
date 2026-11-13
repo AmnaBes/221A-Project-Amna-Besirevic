@@ -179,6 +179,10 @@ psych::describe(h2CorData)
 ```
 
 ```{r codebooks}
+###JK: The descriptive calculations run, but the final codebook chunk fails in a fresh session. ###
+# Remove this extra chunk if you are only submitting descriptives. If you want to keep the codebooks, call codebook::compact_codebook(h1Data) and codebook::compact_codebook(h2Data) with the objects loaded in this script.
+###  End of comment ###
+
 compact_codebook(h1Data_complete)
 compact_codebook(h2Data_complete)
 ```
