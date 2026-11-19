@@ -11,6 +11,17 @@ editor_options:
   chunk_output_type: console
 ---
 
+###JK: Fix the report and chunk-option YAML before rendering. ###
+# Put toc and code-fold under format > html, using the structure from the Lab06 example. Keep editor: visual on its own line outside that mapping.
+# Change #| label:load-data to #| label: load-data; the space after the colon is required.
+###  End of comment ###
+
+
+###JK: Publish the report after it renders successfully. ###
+# I could not open a GitHub Pages report for this repository on November 19.
+# Render with embed-resources: true, copy the resulting HTML to docs/index.html, and push it. Then choose main and /docs in the repository's Settings > Pages.
+###  End of comment ###
+
 ## Quarto
 
 Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
@@ -38,6 +49,13 @@ The `echo: false` option disables the printing of code (only output is displayed
 library(ggplot2)
 library(ggrain)
 
+###JK: Use consistent data-object names and the category names stored in your CSV. ###
+# The H1 CSV contains Men, Women, Non-binary, and Prefer not to say. Using numeric factor levels 0:3 turns every gender response into NA.
+# h1Data$Sex <- factor(h1Data$Sex, levels = c("Men", "Women", "Non-binary", "Prefer not to say"))
+# Change the H2 read assignment from h2Datat to h2Data. In the later chunks, replace h1PlotData with h1Data and h2Data_complete with h2Data.
+# These objects must all be created by this document because Render starts a fresh R session.
+###  End of comment ###
+
 h1Data<-read.csv("Data/h1_processed.csv")
 h1Data$Sex <- factor(
   h1Data$Sex,
@@ -57,6 +75,11 @@ h2Datat<-read.csv("Data/h2_processed.csv")
 ## Hypothesis 1
 
 H1: Gender will have an effect on the perception of constraints of leaving a relationship
+
+###JK: Describe Sex as gender identity and match the H1 figure reference to its label. ###
+# Your H1 uses Sex, the gender-identity variable. Update the Sex_birth wording in the variable description and figure paragraph.
+# Replace @fig-relmob with @fig-h1-raincloud to match the label of your H1 graph chunk.
+###  End of comment ###
 
 ### Variables and descriptive statistics
 
